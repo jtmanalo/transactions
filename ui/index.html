@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offline Financial & Transaction Manager</title>
+  <style>
+    body { margin: 0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#000; color:#fff; }
+    .phone { max-width: 420px; margin: 0 auto; min-height: 100vh; padding: 24px 16px; box-sizing: border-box; }
+    .card { background: #1c1c1e; border-radius: 20px; padding: 16px; margin-bottom: 14px; }
+    .label { color: #8e8e93; font-size: 12px; margin-bottom: 4px; }
+    .big { font-size: 40px; font-weight: 600; }
+    input, select { width: 100%; box-sizing: border-box; border: 0; border-radius: 12px; background:#2c2c2e; color:#fff; padding: 12px; margin-top: 8px; }
+    button { width: 100%; margin-top: 10px; border: 0; border-radius: 12px; padding: 12px; background:#ff9f0a; color:#000; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="card">
+      <div class="label">Remaining Cash</div>
+      <div class="big" id="remaining">₱0.00</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Daily Cash Inputs</div>
+      <input id="starting" type="number" placeholder="Starting Cash" value="1000" />
+      <input id="sales" type="number" placeholder="Sales" value="500" />
+      <input id="purchases" type="number" placeholder="Purchases" value="200" />
+      <input id="expenses" type="number" placeholder="Expenses" value="100" />
+      <button id="recalc">Finalize Entry</button>
+    </div>
+
+    <div class="card">
+      <div class="label">Transaction Draft (offline persisted)</div>
+      <select>
+        <option>Item Dropdown</option>
+        <option>Rice</option>
+        <option>Water</option>
+      </select>
+      <input type="number" placeholder="Auto-populated Price (editable)" value="25" />
+      <input type="number" placeholder="Quantity" value="2" />
+    </div>
+  </div>
+
+  <script>
+    function numberOf(id) { return Number(document.getElementById(id).value || 0); }
+    function updateRemaining() {
+      const remaining = (numberOf('starting') + numberOf('sales')) - (numberOf('purchases') + numberOf('expenses'));
+      document.getElementById('remaining').textContent = `₱${remaining.toFixed(2)}`;
+      localStorage.setItem('financial-form', JSON.stringify({
+        starting: numberOf('starting'), sales: numberOf('sales'), purchases: numberOf('purchases'), expenses: numberOf('expenses')
+      }));
+    }
+    const saved = localStorage.getItem('financial-form');
+    if (saved) {
+      const data = JSON.parse(saved);
+      ['starting','sales','purchases','expenses'].forEach((key) => {
+        if (typeof data[key] === 'number') document.getElementById(key).value = data[key];
+      });
+    }
+    ['starting','sales','purchases','expenses'].forEach((id) => document.getElementById(id).addEventListener('input', updateRemaining));
+    document.getElementById('recalc').addEventListener('click', updateRemaining);
+    updateRemaining();
+  </script>
+</body>
+</html>
